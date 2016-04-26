@@ -9,11 +9,11 @@ Vagrant::configure("2") do |config|
 #  ansible_dir = "../madrid-infra/ansible"
 #  ansible_verbose = "v"
 #  shared_dir = "../"
-  config.vm.box = "ubuntu/xenial64"
+  config.vm.box = "oinume/ubuntu-16.04"
   config.vm.hostname = "wdb93-sql"
 
   # MySQL
-  config.vm.network :forwarded_port, guest: 3306, host: 13306
+  # config.vm.network :forwarded_port, guest: 3306, host: 23306
   # Create a private network, which allows host-only access to the machine
   # using a specific IP.
   config.vm.network :private_network, ip: "192.168.9.10"
