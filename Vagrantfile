@@ -1,16 +1,10 @@
 # -*- mode: ruby -*-
-# vi: set ft=ruby :
 
-#
-# Vagrant file for local provisioning
-#
 Vagrant::configure("2") do |config|
 
-#  ansible_dir = "../madrid-infra/ansible"
-#  ansible_verbose = "v"
-#  shared_dir = "../"
-  config.vm.box = "oinume/ubuntu-16.04"
+  config.vm.box = "oinume/ubuntu-14.04-jp"
   config.vm.hostname = "wdb93-sql"
+  #config.vm.synced_folder "./", "/tinyblog"
 
   # MySQL
   # config.vm.network :forwarded_port, guest: 3306, host: 23306
@@ -27,23 +21,8 @@ Vagrant::configure("2") do |config|
     v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
   end
 
-  if Vagrant.has_plugin?("vagrant-cachier")
-    config.cache.scope = :box
+  config.vm.provision :shell do |shell|
+    shell.inline = "cd /vagrant && sh provision.sh"
   end
-
-  # Ansible
-  # config.vm.provision :ansible do |ansible|
-  #   ansible_dir = File.expand_path(ansible_dir)
-  #   ansible.playbook = "#{ansible_dir}/local.yml"
-  #   ansible.groups = {
-  #     "local" => ["default"],
-  #   }
-  #   ansible.verbose = ansible_verbose
-  # end
-
-  # If you do not want to install ansible to local machine, Try this
-  # config.vm.provision :shell do |shell|
-  #   shell.inline = "cd /vagrant && sudo ./setup_ansible && sudo ansible-playbook provisioning/site.yml -i provisioning/localhost"
-  # end
 
 end

@@ -1,0 +1,38 @@
+#-*- coding:utf-8 -*-
+
+SQL_UP = u"""
+CREATE TABLE blogs (
+    id INT NOT NULL AUTO_INCREMENT,
+    name VARCHAR(100) NOT NULL,
+    PRIMARY KEY (`id`)
+);
+
+CREATE TABLE articles (
+    id INT NOT NULL AUTO_INCREMENT,
+    blog_id INT NOT NULL,
+    content TEXT NOT NULL DEFAULT '',
+    published TINYINT NOT NULL DEFAULT 0,
+    published_at DATETIME NOT NULL,
+    PRIMARY KEY (`id`)
+);
+
+CREATE TABLE tags (
+    blog_id INT NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    PRIMARY KEY (`blog_id`, `name`)
+);
+
+CREATE TABLE article_tags (
+    article_id INT NOT NULL,
+    tag_name  VARCHAR(100) NOT NULL DEFAULT '',
+    PRIMARY KEY (`article_id`, `tag_name`)
+);
+"""
+
+SQL_DOWN = u"""
+DROP TABLE article_tags;
+DROP TABLE tags;
+DROP TABLE tags;
+DROP TABLE articles;
+DROP TABLE blogs;
+"""
