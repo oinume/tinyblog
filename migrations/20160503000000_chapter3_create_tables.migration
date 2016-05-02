@@ -1,31 +1,37 @@
 #-*- coding:utf-8 -*-
 
 SQL_UP = u"""
-CREATE TABLE blogs (
+CREATE TABLE IF NOT EXISTS blogs (
     id INT NOT NULL AUTO_INCREMENT,
     name VARCHAR(100) NOT NULL,
     PRIMARY KEY (`id`)
 );
 
-CREATE TABLE articles (
+CREATE TABLE IF NOT EXISTS articles (
     id INT NOT NULL AUTO_INCREMENT,
     blog_id INT NOT NULL,
     content TEXT NOT NULL DEFAULT '',
     published TINYINT NOT NULL DEFAULT 0,
     published_at DATETIME NOT NULL,
-    PRIMARY KEY (`id`)
+    PRIMARY KEY (id),
+    FOREIGN KEY (blog_id) REFERENCES blogs(id) ON DELETE CASCADE
 );
 
-CREATE TABLE tags (
+CREATE TABLE IF NOT EXISTS tags (
+    id INT NOT NULL AUTO_INCREMENT,
     blog_id INT NOT NULL,
     name VARCHAR(100) NOT NULL,
-    PRIMARY KEY (`blog_id`, `name`)
+    PRIMARY KEY (id),
+    UNIQUE KEY `blog_id-name` (blog_id, name),
+    FOREIGN KEY (blog_id) REFERENCES blogs(id) ON DELETE CASCADE
 );
 
-CREATE TABLE article_tags (
+CREATE TABLE IF NOT EXISTS article_tags (
     article_id INT NOT NULL,
-    tag_name  VARCHAR(100) NOT NULL DEFAULT '',
-    PRIMARY KEY (`article_id`, `tag_name`)
+    tag_id INT NOT NULL,
+    PRIMARY KEY (article_id, tag_id),
+    FOREIGN KEY (article_id) REFERENCES articles(id) ON DELETE CASCADE,
+    FOREIGN KEY (tag_id) REFERENCES tags(id) ON DELETE CASCADE
 );
 """
 
