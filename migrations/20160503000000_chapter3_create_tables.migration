@@ -17,15 +17,17 @@ CREATE TABLE articles (
 );
 
 CREATE TABLE tags (
+    id INT NOT NULL AUTO_INCREMENT,
     blog_id INT NOT NULL,
     name VARCHAR(100) NOT NULL,
-    PRIMARY KEY (`blog_id`, `name`)
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `blog_id-name` (`blog_id`,`name`)
 );
 
 CREATE TABLE article_tags (
     article_id INT NOT NULL,
-    tag_name  VARCHAR(100) NOT NULL DEFAULT '',
-    PRIMARY KEY (`article_id`, `tag_name`)
+    tag_id INT NOT NULL,
+    PRIMARY KEY (`article_id`, `tag_id`)
 );
 """
 

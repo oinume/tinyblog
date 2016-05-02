@@ -1,6 +1,10 @@
 #!/bin/sh
 
-sudo apt update
+if [ ! -f /var/tmp/apt_update ]; then
+    sudo apt update
+    touch /var/tmp/apt_update
+fi
+
 echo "mysql-server-5.6  mysql-server/root_password password root" | sudo debconf-set-selections
 echo "mysql-server-5.6  mysql-server/root_password_again password root" | sudo debconf-set-selections
 sudo apt install -y mysql-server-5.6 mysql-client-5.6 libmysqlclient-dev
