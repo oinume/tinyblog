@@ -23,3 +23,9 @@ _testmain.go
 *.test
 *.prof
 /.vagrant
+
+.idea
+*.iml
+*.log
+.venv
+*.pyc
