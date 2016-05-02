@@ -11,6 +11,8 @@ sudo apt install -y mysql-server-5.6 mysql-client-5.6 libmysqlclient-dev
 mysql -uroot -proot -e "CREATE DATABASE IF NOT EXISTS tinyblog DEFAULT CHARACTER SET utf8mb4 DEFAULT COLLATE utf8mb4_general_ci;"
 mysql -uroot -proot -e "GRANT ALL ON tinyblog.* TO tinyblog@'%' IDENTIFIED BY 'tinyblog';"
 mysql -uroot -proot -e "GRANT ALL ON tinyblog.* TO tinyblog@'localhost' IDENTIFIED BY 'tinyblog';"
+sudo sed -i -e 's/127\.0\.0\.1/0.0.0.0/' /etc/mysql/my.cnf
+sudo service mysql restart
 
 sudo apt install -y python-pip python-dev
 sudo pip install -r requirements.txt
