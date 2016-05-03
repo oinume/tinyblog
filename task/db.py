@@ -20,16 +20,47 @@ def mysqldump():
 
 
 @task
-def generate_data():
-    conn = pymysql.connect(
-        host="192.168.9.10",
-        db="tinyblog",
-        user="tinyblog",
-        password="tinyblog",
-        charset="utf8mb4",
-        cursorclass=pymysql.cursors.DictCursor)
+def generate_blogs():
+    sql = "INSERT INTO blogs (name) VALUES "
+    names = [
+        "doublemarket",
+        "strsk",
+        "oinume",
+        "oranie",
+        "akuwano",
+        "hiroakis",
+        "marqs",
+        "mikeda",
+        "namikawa",
+        "kakerukaeru",
+    ]
+    params = []
+    for name in names:
+        for i in range(0, 1000):
+            sql += "(%s),"
+            params.append("{}-{:04d}".format(name, i+1))
+    sql = sql[:-1]
+    conn = _connect()
     with conn.cursor() as cursor:
-        cursor.execute("SELECT 1")
-        for row in cursor.fetchall():
-            print(row)
+        cursor.execute(sql, params)
     conn.close()
+
+
+@task
+def generate_articles():
+    pass
+
+
+def _connect(
+    host="192.168.9.10", port=3306, db="tinyblog",
+    user="tinyblog", password="tinyblog"
+):
+    return pymysql.connect(
+        host=host,
+        port=port,
+        db=db,
+        user=user,
+        password=password,
+        charset="utf8mb4",
+        autocommit=True,
+        cursorclass=pymysql.cursors.DictCursor)
