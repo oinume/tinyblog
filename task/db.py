@@ -1,6 +1,7 @@
 # encoding: utf-8
 from __future__ import print_function
 from fabric.api import execute, local, task
+import datetime
 import pymysql
 
 @task
@@ -48,8 +49,7 @@ def generate_blogs():
 
 @task
 def generate_articles():
-    import datetime
-    now = datetime.datetime.now()
+    now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     conn = _connect()
     conn.autocommit(False)
     for i in range(10000):
@@ -58,12 +58,24 @@ def generate_articles():
         for j in range(10):
             sql += "(%s, %s, %s, %s, %s),"
             content = _generate_article_content(i)
-            params.extend([i+1, content[0], content[1], 1, now.strftime("%Y-%m-%d %H:%M:%S")])
+            params.extend([i+1, content[0], content[1], 1, now])
         sql = sql[:-1]
         with conn.cursor() as cursor:
             cursor.execute(sql, params)
         if i % 100 == 0:
             conn.commit()
+    conn.commit()
+
+    # Add more 2000 records to blog_id=1
+    sql = "INSERT INTO articles (blog_id, title, body, published, published_at) VALUES "
+    params = []
+    for i in range(2000):
+        sql += "(%s, %s, %s, %s, %s),"
+        content = _generate_article_content(i)
+        params.extend([1, content[0], content[1], 1, now])
+    sql = sql[:-1]
+    with conn.cursor() as cursor:
+        cursor.execute(sql, params)
     conn.commit()
     conn.close()
 
