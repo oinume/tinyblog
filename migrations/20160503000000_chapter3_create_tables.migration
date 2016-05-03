@@ -3,47 +3,47 @@
 SQL_UP = u"""
 /* ブログ情報 */
 CREATE TABLE IF NOT EXISTS blogs (
-    /* ブログID */
-    id INT NOT NULL AUTO_INCREMENT,
-    /* ブログ名 */
-    name VARCHAR(100) NOT NULL,
-    PRIMARY KEY (`id`)
+  /* ブログID */
+  id INT NOT NULL AUTO_INCREMENT,
+  /* ブログ名 */
+  name VARCHAR(100) NOT NULL,
+  PRIMARY KEY (`id`)
 );
 
 /* ブログ記事 */
 CREATE TABLE IF NOT EXISTS articles (
-    /* 記事ID */
-    id INT NOT NULL AUTO_INCREMENT,
-    /* ブログID */
-    blog_id INT NOT NULL,
-    /* 記事タイトル */
-    title VARCHAR(255) NOT NULL DEFAULT '',
-    /* 記事本文 */
-    body TEXT NOT NULL DEFAULT '',
-    /* 公開フラグ 1:公開, 0:非公開 */
-    published TINYINT NOT NULL DEFAULT 0,
-    /* 公開日時 */
-    published_at DATETIME NOT NULL,
-    PRIMARY KEY (id),
-    CONSTRAINT `articles-fk-blog_id`
-        FOREIGN KEY (blog_id)
-        REFERENCES blogs(id) ON DELETE CASCADE
+  /* 記事ID */
+  id INT NOT NULL AUTO_INCREMENT,
+  /* ブログID */
+  blog_id INT NOT NULL,
+  /* 記事タイトル */
+  title VARCHAR(255) NOT NULL DEFAULT '',
+  /* 記事本文 */
+  body TEXT NOT NULL DEFAULT '',
+  /* 公開フラグ 1:公開, 0:非公開 */
+  published TINYINT NOT NULL DEFAULT 0,
+  /* 公開日時 */
+  published_at DATETIME NOT NULL,
+  PRIMARY KEY (id),
+  CONSTRAINT `articles-fk-blog_id`
+    FOREIGN KEY (blog_id)
+    REFERENCES blogs(id) ON DELETE CASCADE
 );
 
 /* カテゴリのマスター */
 CREATE TABLE IF NOT EXISTS categories (
-    /* カテゴリID */
-    id INT NOT NULL AUTO_INCREMENT,
-    /* ブログID */
-    blog_id INT NOT NULL,
-    /* カテゴリ名 */
-    name VARCHAR(100) NOT NULL,
-    PRIMARY KEY (id),
-    /* 同一ブログでカテゴリ名はユニークにする */
-    UNIQUE KEY `blog_id-name` (blog_id, name),
-    CONSTRAINT `categories-fk-blog_id`
-        FOREIGN KEY (blog_id)
-        REFERENCES blogs(id) ON DELETE CASCADE
+  /* カテゴリID */
+  id INT NOT NULL AUTO_INCREMENT,
+  /* ブログID */
+  blog_id INT NOT NULL,
+  /* カテゴリ名 */
+  name VARCHAR(100) NOT NULL,
+  PRIMARY KEY (id),
+  /* 同一ブログでカテゴリ名はユニークにする */
+  UNIQUE KEY `blog_id-name` (blog_id, name),
+  CONSTRAINT `categories-fk-blog_id`
+    FOREIGN KEY (blog_id)
+    REFERENCES blogs(id) ON DELETE CASCADE
 );
 
 /*
@@ -51,17 +51,17 @@ CREATE TABLE IF NOT EXISTS categories (
  * 一つの記事には複数のカテゴリを設定できる
  */
 CREATE TABLE IF NOT EXISTS article_categories (
-    /* 記事ID */
-    article_id INT NOT NULL,
-    /* カテゴリID */
-    category_id INT NOT NULL,
-    PRIMARY KEY (article_id, category_id),
-    CONSTRAINT `article_categories-fk-article_id`
-        FOREIGN KEY (article_id)
-        REFERENCES articles(id) ON DELETE CASCADE,
-    CONSTRAINT `article_categories-fk-category_id`
-        FOREIGN KEY (category_id)
-        REFERENCES categories(id) ON DELETE CASCADE
+  /* 記事ID */
+  article_id INT NOT NULL,
+  /* カテゴリID */
+  category_id INT NOT NULL,
+  PRIMARY KEY (article_id, category_id),
+  CONSTRAINT `article_categories-fk-article_id`
+    FOREIGN KEY (article_id)
+    REFERENCES articles(id) ON DELETE CASCADE,
+  CONSTRAINT `article_categories-fk-category_id`
+    FOREIGN KEY (category_id)
+    REFERENCES categories(id) ON DELETE CASCADE
 );
 """
 
