@@ -49,12 +49,12 @@ def generate_blogs():
 
 @task
 def generate_articles():
-    now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     conn = _connect()
     conn.autocommit(False)
     for i in range(10000):
         sql = "INSERT INTO articles (blog_id, title, body, published, published_at) VALUES "
         params = []
+        now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         for j in range(10):
             sql += "(%s, %s, %s, %s, %s),"
             content = _generate_article_content(i)
@@ -69,6 +69,7 @@ def generate_articles():
     # Add more 2000 records to blog_id=1
     sql = "INSERT INTO articles (blog_id, title, body, published, published_at) VALUES "
     params = []
+    now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     for i in range(2000):
         sql += "(%s, %s, %s, %s, %s),"
         content = _generate_article_content(i)
@@ -84,6 +85,60 @@ def generate_articles():
 def generate_all():
     execute(generate_blogs)
     execute(generate_articles)
+
+
+@task
+def nplus1_sample1():
+    conn = _connect()
+    latest_articles = []
+    with conn.cursor() as cursor:
+        cursor.execute("""
+SELECT id, blog_id, title FROM articles
+WHERE published = 1
+ORDER BY published_at DESC LIMIT 10
+        """)
+        for row in cursor.fetchall():
+            cursor.execute("SELECT name FROM blogs WHERE id = %s", row["blog_id"])
+            blog = cursor.fetchone()
+            latest_articles.append({
+                "id": row["id"],
+                "title": row["title"],
+                "blog_id": row["blog_id"],
+                "blog_name": blog["name"]})
+    #import pprint; pprint.pprint(latest_articles)
+    conn.close()
+
+
+@task
+def nplus1_sample2():
+    conn = _connect()
+    latest_articles = []
+    with conn.cursor() as cursor:
+        cursor.execute("""
+SELECT id, blog_id, title FROM articles
+WHERE published = 1
+ORDER BY published_at DESC LIMIT 10
+        """)
+        blog_ids = []
+        blog_names = {}
+        for row in cursor.fetchall():
+            latest_articles.append({
+                "id": row["id"],
+                "title": row["title"],
+                "blog_id": row["blog_id"]})
+            blog_ids.append(row["blog_id"])
+
+        if not blog_ids:
+            return []
+        p = ("%s," * len(blog_ids))[:-1]
+        cursor.execute("SELECT id, name FROM blogs WHERE id IN (" + p + ")", blog_ids)
+        for row in cursor.fetchall():
+            blog_names[row["id"]] = row["name"]
+        for article in latest_articles:
+            article["blog_name"] = blog_names[article["blog_id"]]
+
+    import pprint; pprint.pprint(latest_articles)
+    conn.close()
 
 
 def _connect(
