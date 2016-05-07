@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS blogs (
   id INT NOT NULL AUTO_INCREMENT,
   /* ブログ名 */
   name VARCHAR(100) NOT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (id)
 );
 
 /* ブログ記事 */
@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS articles (
   /* 公開日時 */
   published_at DATETIME NOT NULL,
   PRIMARY KEY (id),
-  CONSTRAINT `articles-fk-blog_id`
+  CONSTRAINT articles_fk_blog_id
     FOREIGN KEY (blog_id)
     REFERENCES blogs(id) ON DELETE CASCADE
 );
@@ -40,8 +40,8 @@ CREATE TABLE IF NOT EXISTS categories (
   name VARCHAR(100) NOT NULL,
   PRIMARY KEY (id),
   /* 同一ブログでカテゴリ名はユニークにする */
-  UNIQUE KEY `blog_id-name` (blog_id, name),
-  CONSTRAINT `categories-fk-blog_id`
+  UNIQUE KEY blog_id_name (blog_id, name),
+  CONSTRAINT categories_fk_blog_id
     FOREIGN KEY (blog_id)
     REFERENCES blogs(id) ON DELETE CASCADE
 );
@@ -56,10 +56,10 @@ CREATE TABLE IF NOT EXISTS article_categories (
   /* カテゴリID */
   category_id INT NOT NULL,
   PRIMARY KEY (article_id, category_id),
-  CONSTRAINT `article_categories-fk-article_id`
+  CONSTRAINT article_categories_fk_article_id
     FOREIGN KEY (article_id)
     REFERENCES articles(id) ON DELETE CASCADE,
-  CONSTRAINT `article_categories-fk-category_id`
+  CONSTRAINT article_categories_fk_category_id
     FOREIGN KEY (category_id)
     REFERENCES categories(id) ON DELETE CASCADE
 );
