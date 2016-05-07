@@ -1,0 +1,18 @@
+#-*- coding:utf-8 -*-
+
+SQL_UP = u"""
+ALTER TABLE article_categories
+  DROP FOREIGN KEY article_categories_fk_article_id,
+  DROP KEY article_categories_fk_category_id,
+  DROP FOREIGN KEY article_categories_fk_category_id;
+
+ALTER TABLE categories
+  DROP FOREIGN KEY categories_fk_blog_id;
+
+ALTER TABLE articles
+  DROP FOREIGN KEY articles_fk_blog_id,
+  DROP KEY articles_fk_blog_id;
+"""
+
+SQL_DOWN = u"""
+"""
