@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS blogs (
   /* ブログID */
   id INT NOT NULL AUTO_INCREMENT,
   /* ブログ名 */
-  name VARCHAR(100) NOT NULL,
+  name VARCHAR(50) NOT NULL,
   PRIMARY KEY (id)
 );
 
@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS categories (
   /* ブログID */
   blog_id INT NOT NULL,
   /* カテゴリ名 */
-  name VARCHAR(100) NOT NULL,
+  name VARCHAR(50) NOT NULL,
   PRIMARY KEY (id),
   /* 同一ブログでカテゴリ名はユニークにする */
   UNIQUE KEY blog_id_name (blog_id, name),

@@ -29,3 +29,5 @@ _testmain.go
 *.log
 .venv
 *.pyc
+
+.DS_Store

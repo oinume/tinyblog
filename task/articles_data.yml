@@ -1,0 +1,394 @@
+---
+- blog_id: 1
+  published: 1
+  published_at: 2016-05-01 00:00:00
+  title: "Heroku Schedulerやcronが正常に稼働しているかをチェックするDead Man's Snitchが便利"
+  body: |-
+    これは[Heroku Advent Calendar 2015](http://qiita.com/advent-calendar/2015/heroku) 21日の記事です。今回はHeroku Schedulerを監視する[Dead Man's Snitch](https://deadmanssnitch.com/)というものを紹介します。
+
+    ### Heroku Schedulerってなに？
+
+    Heroku上で特定のスクリプトやコマンドを動かすcronみたいなもの。「みたいなもの」というのは、cronと違って「何時何分に実行する」というような厳密な時間指定ができず、10分、1時間、1日単位でしか指定ができません。イメージとしては以下のような感じ。
+
+    ![Heroku Scheduler setting](https://github.com/oinume/dmm-eikaiwa-tsc/raw/master/doc/heroku_scheduler.png?raw=true "Heroku Scheduler setting")
+
+    ただ、このような要件でも十分であれば、無料のDynoでも利用できるのがメリットだと思います。
+
+
+    ### Dead Man's Snitchでコマンドが正常に稼働しているかチェックする
+    Heroku Schedulerで動かしているコマンドが正常に稼働しているかをチェックすることができないか？と思って調べていたらこのDead Man's Snitchに行き着きました。原理としては
+
+    1. Heroku Schedulerに`your_command.sh && curl https://nosnch.in/<hash>`のようにコマンドを登録しておき、your_command.shが成功した時にcurlで成功したということをDead Man's Snitchに送信する(チェックイン)
+    1. Dead Man's Snitch側では、1時間の間隔(*1)でちゃんとコマンドが成功しチェックインされたかどうかをチェック
+    1. もし1時間以上チェックインしていなければ、指定したメールアドレスにアラートメールが送信される
+
+    という流れです。チェックインをチェックする間隔は1日, 1週間などの間隔が設定可能で、有料プランだと15分、30分の間隔もできるようです。
+
+    ちなみにチェックインされていない場合に送られてくるアラートメールはこんな感じ。
+
+    ```
+    Hi <app>,
+
+    FYI "<app>" doesn't seem to be working.
+
+    Last healthy check-in: about 8 hours ago (16 Dec 16:13 UTC)
+
+    You might want to check it out:
+
+    https://deadmanssnitch.com/snitches/<hash>
+
+    Would you like to pause your snitch?
+
+    https://deadmanssnitch.com/snitches/<hash>/pause
+
+    Kind regards,
+
+    Dead Man's Snitch
+    ```
+
+    なおこのDead Man's Snitchは特定のURLにGETでアクセスするだけのシンプルな仕組みなので、Heroku Schedulerだけではなくcronでも使えます。もちろんcurlからではなくプログラムのコードからでも呼び出せます。
+
+
+    ### まとめ
+    Heroku Schedulerやcronの死活監視に使えるDead Man's Snitchというサービスを紹介しました。データーベースのデータをバックアップするような重要なスクリプトにDead Man's Snitchによる死活監視を入れておくとスクリプトが動作していないことにすぐ気付けるのでオススメです。
+- blog_id: 2
+  published: 1
+  published_at: 2016-05-02 00:00:00
+  title: "MySQLでbulk insert + on duplicate key updateしたい"
+  body: |-
+    MySQLで`INSERT INTO hoge VALUES (...), (...), (...)`のbulk insertでon duplicate key update(すでにレコードがあったらUPDATEで上書きする)って併用できるのかな？っていうのが気になったので調べてみたらできるみたい。[VALUES関数](https://dev.mysql.com/doc/refman/5.6/ja/miscellaneous-functions.html#function_values)というその目的のためだけに存在するような関数を使う。
+
+    こんな感じでテーブル作って
+
+    ```sql
+    CREATE TABLE users (
+        name VARCHAR(255) NOT NULL,
+        age TINYINT UNSIGNED NOT NULL,
+        PRIMARY KEY (name)
+    ) ENGINE=InnoDB;
+    ```
+
+    データをINSERTして
+
+    ```sql
+    INSERT INTO users VALUES
+      ('akuwano', 25), ('oinume', 24), ('oranie', 23);
+
+    SELECT * FROM users;
+    +---------+-----+
+    | name    | age |
+    +---------+-----+
+    | akuwano |  25 |
+    | oinume  |  24 |
+    | oranie  |  23 |
+    +---------+-----+
+    ```
+
+    `INSERT ... ON DUPLICATE KEY UPDATE`で重複したレコードがあった場合に全てアップデートされるかな？
+
+    ```sql
+    INSERT INTO users VALUES
+      ('akuwano', 15), ('oinume', 14), ('oranie', 13)
+      ON DUPLICATE KEY UPDATE age = VALUES(age);
+
+    mysql> SELECT * FROM users;
+    +---------+-----+
+    | name    | age |
+    +---------+-----+
+    | akuwano |  15 |
+    | oinume  |  14 |
+    | oranie  |  13 |
+    +---------+-----+
+    ```
+
+    <span style="font-size: xx-large">された！！</span>
+- blog_id: 3
+  published: 1
+  published_at: 2016-05-03 00:00:00
+  title: "ターミナルとキーボードだけでプルリクエストを送る"
+  body: |-
+    これは[Sending pull-request only with terminal and keyboard](/entry/sending-pull-request-only-with-terminal-and-keyboard)の日本語の記事です。
+
+
+    ### 必要なもの
+
+    * Mac
+    * Terminal
+    * hub command (`brew install hub`でインストールしておく)
+
+
+    ### How to send pull-request
+
+    ブランチを作る
+    ```
+    $ git checkout -b new-cool-feature
+    ```
+
+    ソースを編集する
+    ```
+    $ git commit -a
+    ```
+
+    わざとgit pushしてエラーにして、正しいコマンドをpbcopyでクリップボードにコピー
+    ```
+    $ git push 2>&1 | grep git | pbcopy
+    ```
+
+    Cmd+Vでペーストしてpush
+    ```
+    $ git push --set-upstream origin new-cool-feature
+
+    Counting objects: 3, done.
+    Delta compression using up to 8 threads.
+    Compressing objects: 100% (3/3), done.
+    Writing objects: 100% (3/3), 324 bytes | 0 bytes/s, done.
+    Total 3 (delta 2), reused 0 (delta 0)
+    To git@github.com:example/example-project.git
+     * [new branch]      new-cool-feature -> new-cool-feature
+    Branch new-cool-feature set up to track remote branch new-cool-feature from origin.
+    ```
+
+    `hub`コマンドでプルリクエストを作成
+    ```
+    $ hub pull-request
+    https://github.com/example/example-project/pull/1
+- blog_id: 4
+  published: 1
+  published_at: 2016-05-04 00:00:00
+  title: "Parsing MySQL's URL in Python3"
+  body: |-
+    Just add `urllib.parse.uses_netloc.append("mysql")` if you want to parse URL such as `mysql://root:pass@localhost/demo`.
+
+    ```python
+    #!/usr/bin/env python
+
+    import urllib.parse
+    urllib.parse.uses_netloc.append("mysql")
+
+    if __name__ == "__main__":
+        url_str = "mysql://root:pass@localhost/demo"
+        url = urllib.parse.urlparse(url_str)
+        print("URL={0}".format(url_str))
+        print("host={0}, user={1}, password={2}, database={3}".format(
+            url.hostname, url.username, url.password, url.path[1:]))
+    ```
+
+
+    ```sh
+    $ python3 url_parse.python
+    URL=mysql://root:pass@localhost/demo
+    host=localhost, user=root, password=pass, database=demo
+    ```
+- blog_id: 5
+  published: 1
+  published_at: 2016-05-05 00:00:00
+  title: "Ansible Meetup in TokyoでLTしてきた"
+  body: |-
+    「Vagrant環境のAnsibleを速くしたいというタイトル」で[Ansible Meetup](http://ansible-users.connpass.com/event/18015/)でLTしてきました。資料はこちら。
+
+    <iframe src="//www.slideshare.net/slideshow/embed_code/key/DeqpQdScVJ5W0H" width="425" height="355" frameborder="0" marginwidth="0" marginheight="0" scrolling="no" style="border:1px solid #CCC; border-width:1px; margin-bottom:5px; max-width: 100%;" allowfullscreen> </iframe> <div style="margin-bottom:5px"> <strong> <a href="//www.slideshare.net/oinume/vagrantansible" title="Vagrant環境のAnsibleを速くしたい" target="_blank">Vagrant環境のAnsibleを速くしたい</a> </strong> from <strong><a href="//www.slideshare.net/oinume" target="_blank">Kazuhiro Oinuma</a></strong> </div>
+
+    もともとは、「Ansible Meetup 行きたいなー。でももう埋まってるなー」から「LT枠に空きがあるからLTすればいいな」というノリでした。結果的にキャンセルがいっぱい出ていて、会場の4分の1ぐらいは席が空いていたという事態ｗ (もったいない
+
+    LTは初めてかつ雰囲気がわからないイベントだったので、ネタ路線で攻めるべきなのかマジメに行くべきなのかわからなかったけど、ネタはそこそこウケていたみたいなので良かったです。あと、Ansible 2.0の話が聞けたのが嬉しかった。block機能が良さそうなのと、Playbook自体は1.x系と2系で互換性があるらしいのでリリースされたら使ってみたい。あと日経さんがAnsibleを使いこなしていて、かつSIerにも使ってもらうというすごいサイクルを生み出していたのが印象的だった。伊藤直也さんが技術顧問やっている影響なのか、最近情報発信がさかんでかなりイメージが上がっている気がします。
+
+    Ansibleは今後もどんどん使っていきたいので、また何かイベントがあったら出たいなぁと思います。
+- blog_id: 6
+  published: 1
+  published_at: 2016-05-06 00:00:00
+  title: "Get auto increment values from MySQL information schema"
+  body: |-
+    Information schema is metadata about MySQL. We can obtain useful information from it. For example, I get current auto increment values by following SQL.
+
+    ```sql
+    SELECT
+      t.table_name, t.auto_increment
+    FROM
+      information_schema.tables AS t
+    WHERE
+      t.table_schema = 'your_db'
+    ORDER BY t.table_name;
+    ```
+
+    ```
+    +-------------------------------------+----------------+
+    | table_name                          | auto_increment |
+    +-------------------------------------+----------------+
+    | blog_categories                     |              4 |
+    | blog_posts                          |              4 |
+    | blog_post_categories                |              4 |
+    | blog_post_comments                  |              1 |
+    | images                              |              7 |
+    +-------------------------------------+----------------+
+    ```
+
+    INFORMATION_SCHEMA database has much more useful tables like COLUMNS, GLOBAL_VARIABLES and so on. It's good to use it when you want to know much about MySQL.
+- blog_id: 7
+  published: 1
+  published_at: 2016-05-07 00:00:00
+  title: "RDS(MySQL)のバイナリログはすぐ消えるから注意"
+  body: |-
+    これ知らないとハマるかもしれないのでメモ。
+
+    [http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_LogAccess.Concepts.MySQL.html:embed:cite]
+
+    に"Amazon RDS normally purges a binary log as soon as possible"とある通り、RDSではバイナリログはすぐ消えてしまう。もし自前でスレーブを立てたりするためにバイナリログをある程度とっておきたい場合は、
+
+    ```
+    call mysql.rds_set_configuration('binlog retention hours', 24);
+    ```
+
+    のプロシージャを実行してバイナリログの保持期間を伸ばすことができる。
+- blog_id: 8
+  published: 0
+  published_at: 2016-05-08 00:00:00
+  title: "AnsibleでPlaybook流した時のgit commit hashをファイルに出力したら捗った"
+  body: |-
+    「このサーバにどこまでPlaybook流したんだっけ？」みたいなことでよく悩んでいたので、AnsibleのPlaybookが入ったリポジトリのgit commit hashをファイルに出力してそれをサーバーに置くようにしてみた。
+
+    こんな感じのアクションをPlaybookに書いて簡単にできた。
+
+    ```
+    - local_action: shell /usr/bin/git show -s --format=%H > /tmp/version.txt
+      sudo: False
+    - copy: src=/tmp/version.txt dest=/var/tmp/version.txt
+    ```
+- blog_id: 9
+  published: 0
+  published_at: 2016-05-09 00:00:00
+  title: "Changing bower package cache directory"
+  body: |-
+    bower caches packages in ~/.cache/bower. How can I change the directory?  [bower's document](http://bower.io/docs/config/#storage) says "Add the following in .bowerrc" but it's totally wrong.
+
+    ```
+    "storage": {
+      "cache" : "~/.bower/cache",
+      "registry" : "~/.bower/registry"
+    }
+    ```
+
+    I try the configuration and run `bower install` but nothing changed. I finally found out correct configuration in [bower/config](https://github.com/bower/config/blob/master/lib/util/defaults.js) repo.
+
+    ```
+    "storage": {
+      packages: ".bower/packages",
+      registry: ".bower/registry"
+    }
+    ```
+
+    Why the document of famous software such as `bower` is wrong?
+- blog_id: 10
+  published: 0
+  published_at: 2016-05-10 00:00:00
+  title: "Mocking a HTTP access with http.Transport in GoLang"
+  body: |-
+    I've investegated a way to mock HTTP request and response when writing a code to access to a HTTP API with `http.Client`. Finally, I found that I can do it by just implementing `RoundTrip` method of `http.RoundTripper`.
+
+    Here is an example of mocking and proxying HTTP request and response. Running with `go run main.go -mock mock`, you can get mocked result and with `go run main.go -mock proxy`, you can get proxied result with httptest.Server.
+
+    ```go
+    package main
+
+    import (
+        "flag"
+        "fmt"
+        "io/ioutil"
+        "net/http"
+        "net/http/httptest"
+        "net/url"
+        "strings"
+    )
+
+    var mock = flag.String("mock", "", "Doesn't perform real access when 'proxy' or 'mock' is specified")
+
+    func main() {
+        flag.Parse()
+        client := http.DefaultClient
+
+        if *mock == "proxy" {
+            server := newServer()
+            defer server.Close()
+
+            client.Transport = &http.Transport{
+                // Proxy to httptest.Server which created above
+                Proxy: func(req *http.Request) (*url.URL, error) {
+                    return url.Parse(server.URL)
+                },
+            }
+        } else if *mock == "mock" {
+            client.Transport = newMockTransport()
+        }
+
+        resp, err := client.Get("http://ifconfig.co/all.json")
+        if err != nil {
+            panic(err)
+        }
+        defer resp.Body.Close()
+
+        body, err := ioutil.ReadAll(resp.Body)
+        fmt.Println("GET http://ifconfig.co/all.json")
+        fmt.Println(string(body))
+    }
+
+    // Create a HTTP server to return mocked response
+    func newServer() *httptest.Server {
+        return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+            w.WriteHeader(200)
+            w.Header().Set("Content-Type", "application/json")
+            fmt.Fprintln(w,
+                `{
+        "Accept-Encoding": [
+            "proxy"
+        ],
+        "User-Agent": [
+            "proxy"
+        ],
+        "X-Ip-Country": [
+            "Japan(Proxy)"
+        ],
+        "X-Real-Ip": [
+            "192.168.1.1"
+        ]
+    }`)
+        }))
+    }
+
+    type mockTransport struct{}
+
+    func newMockTransport() http.RoundTripper {
+        return &mockTransport{}
+    }
+
+    // Implement http.RoundTripper
+    func (t *mockTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+        // Create mocked http.Response
+        response := &http.Response{
+            Header:     make(http.Header),
+            Request:    req,
+            StatusCode: http.StatusOK,
+        }
+        response.Header.Set("Content-Type", "application/json")
+
+        responseBody :=
+            `{
+        "Accept-Encoding": [
+            "mock"
+        ],
+        "User-Agent": [
+            "mock"
+        ],
+        "X-Ip-Country": [
+            "Japan(Mock)"
+        ],
+        "X-Real-Ip": [
+            "192.168.1.1"
+        ]
+    }`
+        response.Body = ioutil.NopCloser(strings.NewReader(responseBody))
+        return response, nil
+    }
+    ```
+
+    I think it's very simple to mock a HTTP request in GoLang. net/http package is awesome.
+
+
