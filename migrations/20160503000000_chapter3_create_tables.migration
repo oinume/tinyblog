@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS articles (
   /* ブログID */
   blog_id INT NOT NULL,
   /* 記事タイトル */
-  title VARCHAR(255) NOT NULL DEFAULT '',
+  title VARCHAR(100) NOT NULL DEFAULT '',
   /* 記事本文 */
   body TEXT NOT NULL DEFAULT '',
   /* 公開フラグ 1:公開, 0:非公開 */
