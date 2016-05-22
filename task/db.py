@@ -3,6 +3,7 @@ from __future__ import print_function
 from fabric.api import execute, local, task
 import datetime
 import pymysql
+import time
 import yaml
 
 @task
@@ -143,6 +144,56 @@ ORDER BY published_at DESC LIMIT 10
             article["blog_name"] = blog_names[article["blog_id"]]
 
     import pprint; pprint.pprint(latest_articles)
+    conn.close()
+
+
+@task
+def bulk_insert_true():
+    conn = _connect()
+    conn.autocommit(True)
+    data = []
+    with open('task/articles_data.yml', 'r') as f:
+        data = yaml.load(f)
+
+    sql = "INSERT INTO articles (blog_id, title, body, published, published_at) VALUES "
+    params = []
+    for i in range(1000):
+        # now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        d = data[i % 10]
+        sql += "(%s, %s, %s, %s, %s),"
+        params.extend([1, u"{} - {}".format(d['title'], i), d['body'], d['published'], d['published_at']])
+    sql = sql[:-1]
+    elapsed = 0
+    with conn.cursor() as cursor:
+        #cursor.max_stmt_length = cursor.max_stmt_length * 1024
+        start = datetime.datetime.now()
+        cursor.execute(sql, params)
+        elapsed = (datetime.datetime.now() - start).microseconds
+    print("elapsed = {}".format(elapsed))
+    conn.close()
+
+
+@task
+def bulk_insert_false():
+    conn = _connect()
+    conn.autocommit(True)
+    data = []
+    with open('task/articles_data.yml', 'r') as f:
+        data = yaml.load(f)
+
+    elapsed = 0
+    sql = "INSERT INTO articles (blog_id, title, body, published, published_at) VALUES (%s, %s, %s, %s, %s)"
+    with conn.cursor() as cursor:
+        for i in range(1000):
+            params = []
+            # now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            d = data[i % 10]
+            params.extend([1, u"{} - {}".format(d['title'], i), d['body'], d['published'], d['published_at']])
+
+            start = datetime.datetime.now()
+            cursor.execute(sql, params)
+            elapsed += (datetime.datetime.now() - start).microseconds
+    print("elapsed = {}".format(elapsed))
     conn.close()
 
 
