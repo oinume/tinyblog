@@ -6,20 +6,22 @@ import pymysql
 import time
 import yaml
 
+MAX_BLOGS_COUNT = 10000
+
 @task
 def migrate(version):
-    local("""vagrant ssh -- "cd /vagrant && db-migrate --migration={version}" """.format(**locals()))
+    local("""cd /vagrant && db-migrate --migration={version}""".format(**locals()))
 
 
 @task
 def reset():
-    local("""vagrant ssh -- "mysql -uroot -proot -e \'DROP DATABASE tinyblog\'" """)
-    local("""vagrant ssh -- "mysql -uroot -proot -e \'CREATE DATABASE tinyblog DEFAULT CHARACTER SET utf8mb4 DEFAULT COLLATE utf8mb4_unicode_ci\'" """)
+    local("""mysql -uroot -proot -e \'DROP DATABASE tinyblog\'""")
+    local("""mysql -uroot -proot -e \'CREATE DATABASE tinyblog DEFAULT CHARACTER SET utf8mb4 DEFAULT COLLATE utf8mb4_unicode_ci\'""")
 
 
 @task
 def mysqldump():
-    local("""vagrant ssh -- "cd /vagrant && mysqldump -uroot -proot --single-transaction --order-by-primary --compress --compact --add-drop-database --default-character-set=utf8mb4 tinyblog > tinyblog.dump.sql" """)
+    local("""cd /vagrant && mysqldump -uroot -proot --single-transaction --order-by-primary --compress --compact --add-drop-database --default-character-set=utf8mb4 tinyblog > tinyblog.dump.sql""")
 
 
 @task
@@ -50,6 +52,28 @@ def generate_blogs():
 
 
 @task
+def generate_categories():
+    conn = _connect()
+    conn.autocommit(False)
+    with open('task/categories_data.yml', 'r') as f:
+        categories = yaml.load(f)
+
+    for i in range(MAX_BLOGS_COUNT):
+        sql = "INSERT INTO categories (blog_id, name) VALUES "
+        params = []
+        for c in categories:
+            sql += "(%s, %s),"
+            params.extend([i+1, c])
+        sql = sql[:-1]
+        with conn.cursor() as cursor:
+            cursor.execute(sql, params)
+        if i % 100 == 0:
+            conn.commit()
+    conn.commit()
+    conn.close()
+
+
+@task
 def generate_articles():
     conn = _connect()
     conn.autocommit(False)
@@ -57,25 +81,48 @@ def generate_articles():
     with open('task/articles_data.yml', 'r') as f:
         data = yaml.load(f)
 
-    for i in range(10000):
+    article_id = 0
+    with conn.cursor() as cursor:
+        cursor.execute("SELECT MAX(id) AS max_id FROM articles")
+        row = cursor.fetchone()
+        if row['max_id'] is None:
+            article_id = 0
+        else:
+            article_id = int(row['max_id'])
+    article_id += 1
+
+    for i in range(MAX_BLOGS_COUNT):
+        # categoriesのデータをロード
+        categories = {}  # name => id
+        with conn.cursor() as cursor:
+            cursor.execute("SELECT id, name FROM categories WHERE blog_id = %s", i+1)
+            for row in cursor.fetchall():
+                categories[row['name']] = row['id']
+        # articles, article_categoriesへのINSERTを生成
         sql = "INSERT INTO articles (blog_id, title, body, published, published_at) VALUES "
-        params = []
-        #now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        for j in range(20):
+        category_sql = "INSERT INTO article_categories (article_id, category_id) VALUES "
+        params, category_params = [], []
+        for j in range(20):  # 1つのブログにつき20件の記事データを作成する
             d = data[j % 10]
             sql += "(%s, %s, %s, %s, %s),"
             params.extend([i+1, u"{} - {} - {}".format(d['title'], i, j), d['body'], d['published'], d['published_at']])
+            for category_name in d['categories']:
+                category_sql += "(%s, %s),"
+                category_params.extend([article_id, categories[category_name]])
+            article_id += 1
+
         sql = sql[:-1]
+        category_sql = category_sql[:-1]
         with conn.cursor() as cursor:
             cursor.execute(sql, params)
+            cursor.execute(category_sql, category_params)
         if i % 100 == 0:
             conn.commit()
     conn.commit()
 
-    # Add more 2000 records to blog_id=1
+    # blog_id=1に2000レコードを追加
     sql = "INSERT INTO articles (blog_id, title, body, published, published_at) VALUES "
     params = []
-    #now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     for i in range(2000):
         d = data[i % 10]
         sql += "(%s, %s, %s, %s, %s),"
@@ -90,6 +137,7 @@ def generate_articles():
 @task
 def generate_all():
     execute(generate_blogs)
+    execute(generate_categories)
     execute(generate_articles)
 
 

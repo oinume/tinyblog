@@ -2,6 +2,8 @@
 - blog_id: 1
   published: 1
   published_at: 2016-05-01 00:00:00
+  categories:
+    - Heroku
   title: "Heroku Schedulerやcronが正常に稼働しているかをチェックするDead Man's Snitchが便利"
   body: |-
     これは[Heroku Advent Calendar 2015](http://qiita.com/advent-calendar/2015/heroku) 21日の記事です。今回はHeroku Schedulerを監視する[Dead Man's Snitch](https://deadmanssnitch.com/)というものを紹介します。
@@ -54,6 +56,8 @@
 - blog_id: 2
   published: 1
   published_at: 2016-05-02 00:00:00
+  categories:
+    - MySQL
   title: "MySQLでbulk insert + on duplicate key updateしたい"
   body: |-
     MySQLで`INSERT INTO hoge VALUES (...), (...), (...)`のbulk insertでon duplicate key update(すでにレコードがあったらUPDATEで上書きする)って併用できるのかな？っていうのが気になったので調べてみたらできるみたい。[VALUES関数](https://dev.mysql.com/doc/refman/5.6/ja/miscellaneous-functions.html#function_values)というその目的のためだけに存在するような関数を使う。
@@ -105,6 +109,9 @@
 - blog_id: 3
   published: 1
   published_at: 2016-05-03 00:00:00
+  categories:
+    - GitHub
+    - Terminal
   title: "ターミナルとキーボードだけでプルリクエストを送る"
   body: |-
     これは[Sending pull-request only with terminal and keyboard](/entry/sending-pull-request-only-with-terminal-and-keyboard)の日本語の記事です。
@@ -155,6 +162,9 @@
 - blog_id: 4
   published: 1
   published_at: 2016-05-04 00:00:00
+  categories:
+    - MySQL
+    - Python
   title: "Parsing MySQL's URL in Python3"
   body: |-
     Just add `urllib.parse.uses_netloc.append("mysql")` if you want to parse URL such as `mysql://root:pass@localhost/demo`.
@@ -182,6 +192,8 @@
 - blog_id: 5
   published: 1
   published_at: 2016-05-05 00:00:00
+  categories:
+    - Ansible
   title: "Ansible Meetup in TokyoでLTしてきた"
   body: |-
     「Vagrant環境のAnsibleを速くしたいというタイトル」で[Ansible Meetup](http://ansible-users.connpass.com/event/18015/)でLTしてきました。資料はこちら。
@@ -196,6 +208,8 @@
 - blog_id: 6
   published: 1
   published_at: 2016-05-06 00:00:00
+  categories:
+    - MySQL
   title: "Get auto increment values from MySQL information schema"
   body: |-
     Information schema is metadata about MySQL. We can obtain useful information from it. For example, I get current auto increment values by following SQL.
@@ -226,6 +240,9 @@
 - blog_id: 7
   published: 1
   published_at: 2016-05-07 00:00:00
+  categories:
+    - MySQL
+    - RDS
   title: "RDS(MySQL)のバイナリログはすぐ消えるから注意"
   body: |-
     これ知らないとハマるかもしれないのでメモ。
@@ -242,6 +259,9 @@
 - blog_id: 8
   published: 0
   published_at: 2016-05-08 00:00:00
+  categories:
+    - Ansible
+    - Git
   title: "AnsibleでPlaybook流した時のgit commit hashをファイルに出力したら捗った"
   body: |-
     「このサーバにどこまでPlaybook流したんだっけ？」みたいなことでよく悩んでいたので、AnsibleのPlaybookが入ったリポジトリのgit commit hashをファイルに出力してそれをサーバーに置くようにしてみた。
@@ -256,6 +276,8 @@
 - blog_id: 9
   published: 0
   published_at: 2016-05-09 00:00:00
+  categories:
+    - Bower
   title: "Changing bower package cache directory"
   body: |-
     bower caches packages in ~/.cache/bower. How can I change the directory?  [bower's document](http://bower.io/docs/config/#storage) says "Add the following in .bowerrc" but it's totally wrong.
@@ -280,6 +302,8 @@
 - blog_id: 10
   published: 0
   published_at: 2016-05-10 00:00:00
+  categories:
+    - Go
   title: "Mocking a HTTP access with http.Transport in GoLang"
   body: |-
     I've investegated a way to mock HTTP request and response when writing a code to access to a HTTP API with `http.Client`. Finally, I found that I can do it by just implementing `RoundTrip` method of `http.RoundTripper`.
