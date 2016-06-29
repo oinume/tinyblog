@@ -1,0 +1,14 @@
+package: github.com/oinume/tinyblog
+import:
+#  - package: goji.io
+#    subpackages:
+#      - pat
+#      - internal
+#      - pattern
+  - package: golang.org/x/net/context
+  # gorm
+  - package: github.com/jinzhu/gorm
+  - package: github.com/jinzhu/inflection
+  # gorp
+  - package: gopkg.in/gorp.v1
+  - package: github.com/go-sql-driver/mysql

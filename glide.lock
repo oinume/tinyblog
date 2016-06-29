@@ -1,0 +1,16 @@
+hash: 74d540365819c2327bfeb470b354aad3727ad2175413a17bfbb7376322629ee8
+updated: 2016-06-27T17:06:11.781900334+09:00
+imports:
+- name: github.com/go-sql-driver/mysql
+  version: 3654d25ec346ee8ce71a68431025458d52a38ac0
+- name: github.com/jinzhu/gorm
+  version: 321d10b67b7218c5cf3bebc0c01fc8c4536c2bc7
+- name: github.com/jinzhu/inflection
+  version: 8f4d3a0d04ce0b7c0cf3126fb98524246d00d102
+- name: golang.org/x/net
+  version: e445b19913b9d40fdbdfe19ac5e3d314aafd6f63
+  subpackages:
+  - context
+- name: gopkg.in/gorp.v1
+  version: c87af80f3cc5036b55b83d77171e156791085e2e
+testImports: []

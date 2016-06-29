@@ -31,3 +31,4 @@ _testmain.go
 *.pyc
 
 .DS_Store
+/vendor
