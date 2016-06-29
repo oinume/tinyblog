@@ -1,3 +1,5 @@
+// Table schema is below.
+// https://github.com/oinume/tinyblog/blob/master/migrations/20160503000000_chapter3_create_tables.migration
 package model
 
 import (
