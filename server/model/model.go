@@ -3,7 +3,6 @@ package model
 import (
 	"time"
 	"github.com/jinzhu/gorm"
-	_ "os"
 	"fmt"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -16,7 +15,6 @@ import (
 var _ = fmt.Print
 
 type Blog struct {
-	//Id int `db:"id,primarykey,autoincrement" gorm:"primary_key;AUTO_INCREMENT"`
 	Id int `db:"id" gorm:"primary_key;AUTO_INCREMENT"`
 	Name string `db:"name" gorm:"column:name"`
 }
@@ -57,7 +55,7 @@ func (_ *ArticleCategory) TableName() string {
 
 type logger struct {}
 func (l *logger) Print(v ...interface{}) {
-	fmt.Printf("logger: %#v", v)// [sql /Users/oinuma/go/src/github.com/oinume/tinyblog/server/model/model_test.go:26 788.002µs SELECT * FROM `blogs`   ORDER BY `blogs`.`id` ASC LIMIT 1 []]1
+	fmt.Printf("logger: %#v\n", v)// [sql /Users/oinuma/go/src/github.com/oinume/tinyblog/server/model/model_test.go:26 788.002µs SELECT * FROM `blogs`   ORDER BY `blogs`.`id` ASC LIMIT 1 []]1
 }
 
 func OpenGorm() (*gorm.DB, error) {
